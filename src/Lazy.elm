@@ -41,7 +41,7 @@ it unless it is absolutely necessary.
 
     lazySum : Lazy Int
     lazySum =
-        lazy (\() -> sum [1..1000000])
+        lazy (\() -> sum <| List.range 1 1000000 )
 
 Now we only pay for `lazySum` if we actually need it.
 -}
@@ -55,7 +55,7 @@ computation when we need it. Here is a rather contrived example.
 
     lazySum : Lazy Int
     lazySum =
-        lazy (\() -> List.sum [1..1000000])
+        lazy (\() -> List.sum <| List.range 1 1000000)
 
     sums : (Int, Int, Int)
     sums =
@@ -76,7 +76,7 @@ do nothing.
 
     lazySum : Lazy Int
     lazySum =
-        lazy (\() -> List.sum [1..1000000])
+        lazy (\() -> List.sum <| List.range 1 1000000)
 
     sums : (Int, Int, Int)
     sums =
@@ -87,7 +87,8 @@ do nothing.
         (force evaledSum, force evaledSum, force evaledSum)
 
 This is mainly useful for cases where you may want to store a lazy value as a
-lazy value and pass it around. For example, in a list.
+lazy value and pass it around. For example, in a list. Where possible, it is better to use
+`force` and simply store the computed value seperately.
 
 -}
 evaluate : Lazy a -> Lazy a
@@ -109,7 +110,7 @@ evaluate piece =
 
     lazySum : Lazy Int
     lazySum =
-        map List.sum (lazy (\() -> [1..1000000]))
+        map List.sum (lazy (\() -> <| List.range 1 1000000)
 
 The resulting lazy value will create a big list and sum it up when it is
 finally forced.
@@ -123,7 +124,7 @@ map f a =
 
     lazySum : Lazy Int
     lazySum =
-        lazy (\() -> List.sum [1..1000000])
+        lazy (\() -> List.sum <| List.range 1 1000000)
 
     lazySumPair : Lazy (Int, Int)
     lazySumPair =
