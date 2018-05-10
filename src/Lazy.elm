@@ -1,28 +1,35 @@
 module Lazy
     exposing
         ( Lazy
+        , andThen
+        , apply
+        , evaluate
         , force
         , lazy
-        , evaluate
         , map
         , map2
         , map3
         , map4
         , map5
-        , apply
-        , andThen
         )
 
 {-| This library lets you delay a computation until later.
 
+
 # Basics
+
 @docs Lazy, lazy, force, evaluate
 
+
 # Mapping
+
 @docs map, map2, map3, map4, map5
 
+
 # Chaining
+
 @docs apply, andThen
+
 -}
 
 -- PRIMITIVES
@@ -41,9 +48,10 @@ it unless it is absolutely necessary.
 
     lazySum : Lazy Int
     lazySum =
-        lazy (\() -> sum <| List.range 1 1000000 )
+        lazy (\() -> sum <| List.range 1 1000000)
 
 Now we only pay for `lazySum` if we actually need it.
+
 -}
 lazy : (() -> a) -> Lazy a
 lazy thunk =
@@ -57,9 +65,10 @@ computation when we need it. Here is a rather contrived example.
     lazySum =
         lazy (\() -> List.sum <| List.range 1 1000000)
 
-    sums : (Int, Int, Int)
+    sums : ( Int, Int, Int )
     sums =
-        (force lazySum, force lazySum, force lazySum)
+        ( force lazySum, force lazySum, force lazySum )
+
 -}
 force : Lazy a -> a
 force piece =
@@ -78,13 +87,13 @@ do nothing.
     lazySum =
         lazy (\() -> List.sum <| List.range 1 1000000)
 
-    sums : (Int, Int, Int)
+    sums : ( Int, Int, Int )
     sums =
         let
             evaledSum =
                 evaluate lazySum
         in
-        (force evaledSum, force evaledSum, force evaledSum)
+        ( force evaledSum, force evaledSum, force evaledSum )
 
 This is mainly useful for cases where you may want to store a lazy value as a
 lazy value and pass it around. For example, in a list. Where possible, it is better to use
@@ -114,6 +123,7 @@ evaluate piece =
 
 The resulting lazy value will create a big list and sum it up when it is
 finally forced.
+
 -}
 map : (a -> b) -> Lazy a -> Lazy b
 map f a =
@@ -126,9 +136,9 @@ map f a =
     lazySum =
         lazy (\() -> List.sum <| List.range 1 1000000)
 
-    lazySumPair : Lazy (Int, Int)
+    lazySumPair : Lazy ( Int, Int )
     lazySumPair =
-        map2 (,) lazySum lazySum
+        map2 (\a b -> ( a, b )) lazySum lazySum
 
 -}
 map2 : (a -> b -> result) -> Lazy a -> Lazy b -> Lazy result
@@ -161,10 +171,11 @@ own, but it lets you map as high as you want.
 
 It is not the most beautiful, but it is equivalent and will let you create
 `map9` quite easily if you really need it.
+
 -}
 apply : Lazy (a -> b) -> Lazy a -> Lazy b
 apply f x =
-    lazy (\() -> (force f) (force x))
+    lazy (\() -> force f (force x))
 
 
 {-| Lazily chain together lazy computations, for when you have a series of
@@ -191,10 +202,10 @@ pattern match on a value, for example, when appending lazy lists:
         lazyList1
           |> Lazy.andThen appendHelp
 
-
 By using `andThen` we ensure that neither `lazyList1` or `lazyList2` are forced
 before they are needed. So as written, the `append` function delays the pattern
 matching until later.
+
 -}
 andThen : (a -> Lazy b) -> Lazy a -> Lazy b
 andThen callback a =
